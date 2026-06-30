@@ -1,66 +1,41 @@
-<<<<<<< HEAD
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Carrega as variáveis do .env
-load_dotenv()
+# 1. Pega o caminho absoluto da pasta do projeto (uma pasta atrás da pasta 'config')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENV_PATH = os.path.join(BASE_DIR, '.env')
 
+# 2. Carrega o .env forçando o caminho exato
+load_dotenv(ENV_PATH)
+
+# 3. Carrega as variáveis de ambiente
 USER = os.getenv("DB_USER")
 PASSWORD = os.getenv("DB_PASSWORD")
 HOST = os.getenv("DB_HOST")
 PORT = os.getenv("DB_PORT")
 NAME = os.getenv("DB_NAME")
 
-# URL de conexão no padrão PostgreSQL
-DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}"
+# Trava de segurança para avisar se o arquivo .env estiver vazio ou incorreto
+if not HOST:
+    print(f"\n[ERRO CRÍTICO] Variável DB_HOST não encontrada! Verifique se o arquivo existe em {ENV_PATH} e se as variáveis começam com DB_")
+
+# URL de conexão com sslmode=require (Essencial para o Supabase)
+DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}?sslmode=require"
 
 # A Engine gerencia o pool de conexões
-engine = create_engine(DATABASE_URL, echo=False) # echo=True para ver o log do SQL
+engine = create_engine(DATABASE_URL, echo=False)
 
-# SessionLocal é a fábrica de sessões (transações)
+# SessionLocal é a fábrica de sessões (transações) para os notebooks
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Base para herdar nos modelos (equivalente a uma classe base de entidades)
 Base = declarative_base()
 
-def get_db_session():
-    """Gera uma nova sessão com o banco de dados."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-=======
-from sqlalchemy import create_engine
-# from sqlalchemy.pool import NullPool
-from dotenv import load_dotenv
-import os
-
-# Load environment variables from .env
-load_dotenv()
-
-# Fetch variables
-USER = os.getenv("user")
-PASSWORD = os.getenv("password")
-HOST = os.getenv("host")
-PORT = os.getenv("port")
-DBNAME = os.getenv("dbname")
-
-# Construct the SQLAlchemy connection string
-DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
-
-# Create the SQLAlchemy engine
-engine = create_engine(DATABASE_URL)
-# If using Transaction Pooler or Session Pooler, we want to ensure we disable SQLAlchemy client side pooling -
-# https://docs.sqlalchemy.org/en/20/core/pooling.html#switching-pool-implementations
-# engine = create_engine(DATABASE_URL, poolclass=NullPool)
-
-# Test the connection
+# Teste rápido de conexão
 try:
     with engine.connect() as connection:
-        print("Connection successful!")
+        print("Conexão com o Supabase estabelecida com sucesso! (Versão Atualizada)")
 except Exception as e:
-    print(f"Failed to connect: {e}")
->>>>>>> 6756f611729d0b86c84a086e979dbd6750b99e2e
+    print(f"Falha ao conectar: {e}")
