@@ -65,3 +65,19 @@ class Avaliacao(Base):
     nota = Column(Integer)
     comentario = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Medicamento(Base):
+    __tablename__ = 'medicamento'
+    id_medicamento = Column(Integer, primary_key=True, autoincrement=True)
+    nome_generico = Column(String(100))
+    nome_comercial = Column(String(100))
+
+class PacienteMedicamento(Base):
+    __tablename__ = 'paciente_medicamento'
+    cpf_paciente = Column(String, ForeignKey('paciente.cpf_paciente'), primary_key=True)
+    id_medicamento = Column(Integer, ForeignKey('medicamento.id_medicamento'), primary_key=True)
+    data_inicio = Column(Date, primary_key=True)
+    data_fim = Column(Date)
+    frequencia = Column(String(50))
+    dosagem = Column(String(50))
